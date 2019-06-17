@@ -6,52 +6,39 @@ import Scroll from '../components/Scroll';
 import ErrorBoundry from '../components/ErrorBoundry';
 import './App.css';
 
-import { setSearchField } from '../actions.js';
+import { setSearchField, requestRobots } from '../actions.js';
 
 // you can name this whatever you want, but this is the redux standards
 const mapStateToProps = state => {
   return {
-    searchField: state.searchField
+    searchField: state.searchRobots.searchField,
+    robots: state.requestRobots.robots,
+    isPending: state.requestRobots.isPending,
+    error: state.requestRobots.error
   }
 }
 
 // dispatch is what triggers the action
 const mapDispatchToProps = (dispatch) => {
   return {
-    onSearchChange: (event) => dispatch(setSearchField(event.target.value))
+    onSearchChange: (event) => dispatch(setSearchField(event.target.value)),
+    onRequestRobots: () => dispatch(requestRobots())
   }
 }
 
 class App extends Component {
-  constructor() {
-    super()
-    // state is something that can change and affect the app
-    // smart components
-    this.state = {
-      robots: []
-    }
-    // console.log('constructor');
-  }
-
   componentDidMount() {
-    // console.log(this.props.store.getState());
-    fetch('https://jsonplaceholder.typicode.com/users')
-      .then(response => response.json())
-      .then(users => this.setState({ robots: users }));
-    // this.setState({ robots: robots });
-    // console.log('componentDidMount');
+    this.props.onRequestRobots();
   }
   
   render() {
-    const { robots } = this.state;
-    const { searchField, onSearchChange } = this.props;
+    const { searchField, onSearchChange, robots, isPending } = this.props;
 
     const filteredRobots  = robots.filter(robot => {
       return robot.name.toLowerCase().includes(searchField.toLowerCase());
     });
-    // console.log('render');
 
-    return !robots.length ?
+    return isPending ?
     <h1>Loading...</h1> :
     (
       <div className='tc'>
